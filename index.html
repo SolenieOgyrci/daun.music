@@ -62,19 +62,9 @@
             color: #aaa;
         }
         audio {
-            display: none; /* Скрываем дефолтный плеер */
-        }
-        .custom-audio-controls {
             width: 100%;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
             margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #fff;
+            border-radius: 30px;
         }
         .controls {
             display: flex;
@@ -105,6 +95,9 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
             cursor: pointer;
             transition: background 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .playlist li:hover {
             background: rgba(255,255,255,0.05);
@@ -113,11 +106,35 @@
             background: rgba(29,185,84,0.2);
             border-left: 4px solid #1DB954;
         }
+        .track-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .track-title {
+            font-weight: bold;
+            color: white;
+        }
+        .track-artist {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        .track-duration {
+            color: #1DB954;
+            font-size: 0.9rem;
+        }
         footer {
             text-align: center;
             padding: 20px;
             color: #aaa;
             font-size: 0.9rem;
+        }
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255,0,0,0.1);
+            border-radius: 10px;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -138,18 +155,18 @@
                 <p id="track-artist">Исполнитель</p>
             </div>
 
-            <audio id="audio-player"></audio>
-            <!-- Кастомный индикатор прогресса -->
-            <div class="custom-audio-controls" id="progress-bar">0:00 / 0:00</div>
+            <audio id="audio-player" controls></audio>
 
             <div class="controls">
-                <button id="prev-btn">PAST BRADAR</button>
-                <button id="play-pause-btn">STOP BRADAR</button>
-                <button id="next-btn">NEXT BRADAR</button>
+                <button id="prev-btn">⏮️ PAST BRADAR</button>
+                <button id="play-pause-btn">▶️ PLAY BRADAR</button>
+                <button id="next-btn">⏭️ NEXT BRADAR</button>
             </div>
+            
+            <div id="error-message" class="error-message" style="display: none;"></div>
         </div>
 
-        <h2>COOL MUSICA PLAYLIST TROLLFACE</h2>
+        <h2>🔥 COOL MUSICA PLAYLIST TROLLFACE</h2>
         <ul class="playlist" id="playlist">
             <!-- Треки будут добавляться здесь -->
         </ul>
@@ -167,9 +184,9 @@
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const playlist = document.getElementById('playlist');
-        const progressBar = document.getElementById('progress-bar');
+        const errorMessage = document.getElementById('error-message');
 
-        // Список треков (замените на свои файлы)
+        // Список треков (пути к твоим файлам)
         const tracks = [
             {
                 title: "ULTRAMATUSHKA PIZDEC TROLLFACE",
@@ -190,32 +207,146 @@
 
         let currentTrackIndex = 0;
 
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        // Функция для отображения ошибок
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 3000);
         }
 
-        function updateProgressBar() {
-            if (!isNaN(audioPlayer.duration)) {
-                const current = formatTime(audioPlayer.currentTime);
-                const total = formatTime(audioPlayer.duration);
-                progressBar.textContent = `${current} / ${total}`;
-            }
-        }
-
+        // Функция для загрузки трека
         function loadTrack(index) {
+            if (index < 0) index = tracks.length - 1;
+            if (index >= tracks.length) index = 0;
+            
             const track = tracks[index];
             currentTrackIndex = index;
 
             trackTitle.textContent = track.title;
             trackArtist.textContent = track.artist;
+            
+            // Пробуем загрузить файл
             audioPlayer.src = track.src;
-            audioPlayer.play();
+            audioPlayer.load();
+            
+            // Проверяем, загрузился ли файл
+            audioPlayer.onerror = function() {
+                showError(`Не могу найти файл: ${track.src}`);
+                trackTitle.textContent = "⚠️ Файл не найден";
+            };
+            
+            // Обновляем активный трек в плейлисте
+            updatePlaylistActive();
+        }
 
-            // Обновляем выделение в плейлисте
-            document.querySelectorAll('.playlist li').forEach((li, i) => {
-                li.classList.toggle('active', i === index);
+        // Функция для обновления активного трека в плейлисте
+        function updatePlaylistActive() {
+            document.querySelectorAll('.playlist li').forEach((li, index) => {
+                if (index === currentTrackIndex) {
+                    li.classList.add('active');
+                } else {
+                    li.classList.remove('active');
+                }
             });
+        }
 
-            playPauseBtn.textContent = 'STOP BRADAR';
+        // Функция для воспроизведения/паузы
+        function togglePlay() {
+            if (audioPlayer.paused) {
+                audioPlayer.play().catch(e => {
+                    showError('Не могу воспроизвести. Проверь файлы.');
+                });
+                playPauseBtn.textContent = '⏸️ STOP BRADAR';
+            } else {
+                audioPlayer.pause();
+                playPauseBtn.textContent = '▶️ PLAY BRADAR';
+            }
+        }
+
+        // Функция для переключения на следующий трек
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+            loadTrack(currentTrackIndex);
+            audioPlayer.play().catch(e => {});
+            playPauseBtn.textContent = '⏸️ STOP BRADAR';
+        }
+
+        // Функция для переключения на предыдущий трек
+        function prevTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(currentTrackIndex);
+            audioPlayer.play().catch(e => {});
+            playPauseBtn.textContent = '⏸️ STOP BRADAR';
+        }
+
+        // Функция для создания плейлиста
+        function renderPlaylist() {
+            playlist.innerHTML = '';
+            
+            tracks.forEach((track, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="track-info">
+                        <span class="track-title">${track.title}</span>
+                        <span class="track-artist">${track.artist}</span>
+                    </div>
+                    <span class="track-duration">🎵</span>
+                `;
+                
+                li.addEventListener('click', () => {
+                    if (currentTrackIndex === index) {
+                        togglePlay();
+                    } else {
+                        loadTrack(index);
+                        audioPlayer.play().catch(e => {});
+                        playPauseBtn.textContent = '⏸️ STOP BRADAR';
+                    }
+                });
+                
+                playlist.appendChild(li);
+            });
+            
+            updatePlaylistActive();
+        }
+
+        // Обновляем кнопку play/pause когда трек заканчивается
+        audioPlayer.addEventListener('ended', () => {
+            nextTrack();
+        });
+
+        // Обновляем кнопку play/pause когда трек на паузе
+        audioPlayer.addEventListener('pause', () => {
+            playPauseBtn.textContent = '▶️ PLAY BRADAR';
+        });
+
+        audioPlayer.addEventListener('play', () => {
+            playPauseBtn.textContent = '⏸️ STOP BRADAR';
+        });
+
+        // Вешаем обработчики на кнопки
+        playPauseBtn.addEventListener('click', togglePlay);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        // Загружаем первый трек при старте
+        renderPlaylist();
+        loadTrack(0);
+
+        // Добавляем клавиши для удобства
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            } else if (e.code === 'ArrowRight') {
+                nextTrack();
+            } else if (e.code === 'ArrowLeft') {
+                prevTrack();
+            }
+        });
+
+        console.log('Плеер готов! Треки:', tracks);
+    </script>
+</body>
+</html>
