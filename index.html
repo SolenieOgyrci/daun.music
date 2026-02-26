@@ -61,11 +61,48 @@
         #track-info p {
             color: #aaa;
         }
+        
+        /* Скрываем дефолтный плеер */
         audio {
-            width: 100%;
-            margin: 20px 0;
-            border-radius: 30px;
+            display: none;
         }
+        
+        /* Кастомный прогресс-бар */
+        .custom-progress {
+            width: 100%;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0%;
+            background: linear-gradient(90deg, #1DB954, #1aa34a);
+            border-radius: 20px;
+            opacity: 0.3;
+            transition: width 0.1s linear;
+            pointer-events: none;
+        }
+        
+        .progress-text {
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        
         .controls {
             display: flex;
             justify-content: center;
@@ -155,7 +192,13 @@
                 <p id="track-artist">Исполнитель</p>
             </div>
 
-            <audio id="audio-player" controls></audio>
+            <audio id="audio-player"></audio>
+            
+            <!-- Кастомный прогресс-бар -->
+            <div class="custom-progress" id="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+                <span class="progress-text" id="progress-text">0:00 / 0:00</span>
+            </div>
 
             <div class="controls">
                 <button id="prev-btn">⏮️ PAST BRADAR</button>
@@ -185,6 +228,9 @@
         const nextBtn = document.getElementById('next-btn');
         const playlist = document.getElementById('playlist');
         const errorMessage = document.getElementById('error-message');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progress-bar');
 
         // Список треков (пути к твоим файлам)
         const tracks = [
@@ -206,6 +252,31 @@
         ];
 
         let currentTrackIndex = 0;
+
+        // Форматирование времени
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Обновление прогресс-бара
+        function updateProgress() {
+            if (audioPlayer.duration) {
+                const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressFill.style.width = percent + '%';
+                progressText.textContent = `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
+            }
+        }
+
+        // Перемотка по клику на прогресс-бар
+        function seek(e) {
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = clickX / rect.width;
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        }
 
         // Функция для отображения ошибок
         function showError(message) {
@@ -236,6 +307,10 @@
                 showError(`Не могу найти файл: ${track.src}`);
                 trackTitle.textContent = "⚠️ Файл не найден";
             };
+            
+            // Сбрасываем прогресс-бар
+            progressFill.style.width = '0%';
+            progressText.textContent = '0:00 / 0:00';
             
             // Обновляем активный трек в плейлисте
             updatePlaylistActive();
@@ -311,6 +386,14 @@
             updatePlaylistActive();
         }
 
+        // Обновляем прогресс
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        
+        // Обновляем когда трек загружен
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            progressText.textContent = `0:00 / ${formatTime(audioPlayer.duration)}`;
+        });
+
         // Обновляем кнопку play/pause когда трек заканчивается
         audioPlayer.addEventListener('ended', () => {
             nextTrack();
@@ -324,6 +407,9 @@
         audioPlayer.addEventListener('play', () => {
             playPauseBtn.textContent = '⏸️ STOP BRADAR';
         });
+
+        // Клик по прогресс-бару для перемотки
+        progressBar.addEventListener('click', seek);
 
         // Вешаем обработчики на кнопки
         playPauseBtn.addEventListener('click', togglePlay);
