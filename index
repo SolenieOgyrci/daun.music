@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>daun.music</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #121212;
+            color: white;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; padding: 30px 0; }
+        h1 { color: #1DB954; font-size: 3rem; }
+        .player { background: #181818; padding: 30px; border-radius: 15px; margin-bottom: 30px; }
+        #track-info h2 { font-size: 1.5rem; margin-bottom: 5px; }
+        #track-info p { color: #aaa; }
+        audio { width: 100%; margin: 20px 0; }
+        .controls { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        button {
+            background: #1DB954; border: none; color: white; padding: 12px 25px;
+            border-radius: 30px; cursor: pointer; font-weight: bold; transition: all 0.3s;
+        }
+        button:hover { background: #1aa34a; transform: translateY(-2px); }
+        .playlist { list-style: none; }
+        .playlist li {
+            padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer; transition: background 0.3s;
+        }
+        .playlist li:hover { background: rgba(255,255,255,0.05); }
+        .playlist li.active { background: rgba(29,185,84,0.2); border-left: 4px solid #1DB954; }
+        footer { text-align: center; padding: 20px; color: #aaa; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>daun.music</h1>
+            <p>Бесплатная музыка без авторских прав</p>
+        </header>
+
+        <div class="player">
+            <div id="track-info">
+                <h2 id="track-title">Выберите трек</h2>
+                <p id="track-artist">Исполнитель</p>
+            </div>
+
+            <audio id="audio-player" controls></audio>
+
+            <div class="controls">
+                <button id="prev-btn">Предыдущий</button>
+                <button id="play-pause-btn">Воспроизвести</button>
+                <button id="next-btn">Следующий</button>
+            </div>
+        </div>
+
+        <h2>Плейлист</h2>
+        <ul class="playlist" id="playlist">
+            <!-- Треки будут добавляться здесь -->
+        </ul>
+
+        <footer>
+            <p>daun.music © 2024 | Музыка с лицензией CC0</p>
+        </footer>
+    </div>
+
+    <script>
+        const audioPlayer = document.getElementById('audio-player');
+        const trackTitle = document.getElementById('track-title');
+        const trackArtist = document.getElementById('track-artist');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const playlist = document.getElementById('playlist');
+
+        // Список треков (замените на свои файлы)
+        const tracks = [
+            {
+                title: "Спокойная мелодия",
+                artist: "Автор 1",
+                src: "music/track1.mp3"
+            },
+            {
+                title: "Энергичный бит",
+                artist: "Автор 2",
+                src: "music/track2.mp3"
+            },
+            {
+                title: "Фоновая музыка",
+                artist: "Автор 3",
+                src: "music/track3.mp3"
+            }
+        ];
+
+        let currentTrackIndex = 0;
+
+        function loadTrack(index) {
+            const track = tracks[index];
+            currentTrackIndex = index;
+
+            trackTitle.textContent = track.title;
+            trackArtist.textContent = track.artist;
+            audioPlayer.src = track.src;
+            audioPlayer.play();
+
+            // Обновляем выделение в плейлисте
+            document.querySelectorAll('.playlist li').forEach((li, i) => {
+                li.classList.toggle('active', i === index);
+            });
+
+            playPauseBtn.textContent = 'Пауза';
+        }
+
+        // Создаём плейлист из массива треков
+        tracks.forEach((track, index) => {
+            const li = document.createElement('li');
+            li.textContent = `${track.title} — ${track.artist}`;
+            li.dataset.index = index;
+            li.addEventListener('click', () => loadTrack(index));
+            playlist.appendChild(li);
+        });
+
+        // Воспроизведение/пауза
+        playPauseBtn.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playPauseBtn.textContent = 'Пауза';
+            } else {
+                audioPlayer.pause();
+                playPauseBtn.textContent = 'Воспроизвести';
+            }
+        });
+
+        // Следующий трек
+        nextBtn.addEventListener('click', () => {
+            let nextIndex = (currentTrackIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+        });
+
+        // Предыдущий трек
+        prevBtn.addEventListener('click', () => {
+            let prevIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+        });
+
+        // Автопереход к следующему треку
+        audioPlayer.addEventListener('ended', () => {
+            let nextIndex = (currentTrackIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+        });
+
+        // Загружаем первый трек при загрузке страницы
+        window.onload = () => loadTrack(0);
+    </script>
+</body>
+</html>
