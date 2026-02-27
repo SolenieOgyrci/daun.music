@@ -457,7 +457,22 @@
                 title: "LOS TRALELETOS PIZDEC KAK KRUTO",
                 artist: "SIN HUYNI PIDOR AHUEVSHI",
                 src: "music/track6.mp3"
-            }
+            },
+            {
+                title: "MYORTVAYA MAMA PHONK",
+                artist: "HUYLUSHA (prod. MOYA MAMOCHKA)",
+                src: "music/track7.mp3"
+            },
+            {
+                title: "ya zaebalsya delat ety huety",
+                artist: "твоя мама толстая и умрет",
+                src: "music/track8.mp3"
+            },
+            {
+                title: "PERDANUT I PEREDURNUT PHONK",
+                artist: "SISKA TIMOFEYA CHERNOUSKO",
+                src: "music/track9.mp3"
+            },
         ];
 
         let currentTrackIndex = 0;
@@ -649,8 +664,8 @@
         function updateVolumeEffects(volumePercent) {
             const body = document.body;
             
-            // Эффект для 67% - почти незаметная картинка на фоне
-            if (volumePercent >= 66 && volumePercent <= 68) {
+            // Эффект для 67% - ТОЛЬКО КОГДА РОВНО 67%
+            if (volumePercent === 67) {
                 body.style.setProperty('--bg-low-vision', 'url("https://avatars.mds.yandex.net/i?id=8e32ce5f58ecffe4ea4487631e1f52a990b715f0-3937077-images-thumbs&n=13")');
             } else {
                 body.style.setProperty('--bg-low-vision', 'none');
