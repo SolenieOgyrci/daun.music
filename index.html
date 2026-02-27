@@ -13,7 +13,7 @@
             padding: 20px;
             position: relative;
         }
-        /* Огненные рамки по бокам */
+        /* Крутые рамочки омагад */
         body::before, body::after {
             content: '';
             position: absolute;
@@ -62,12 +62,12 @@
             color: #aaa;
         }
         
-        /* Скрываем дефолтный плеер */
+        /* это шоб дефолт плеер скрыть */
         audio {
             display: none;
         }
         
-        /* Кастомный прогресс-бар */
+        /* Кастомный плеер */
         .custom-progress {
             width: 100%;
             height: 40px;
@@ -194,7 +194,7 @@
 
             <audio id="audio-player"></audio>
             
-            <!-- Кастомный прогресс-бар -->
+            <!-- Кастомный прогресс-бар 2 -->
             <div class="custom-progress" id="progress-bar">
                 <div class="progress-fill" id="progress-fill"></div>
                 <span class="progress-text" id="progress-text">0:00 / 0:00</span>
@@ -211,7 +211,7 @@
 
         <h2>🔥 COOL MUSICA PLAYLIST TROLLFACE</h2>
         <ul class="playlist" id="playlist">
-            <!-- Треки будут добавляться здесь -->
+            <!-- крутые фонки будут добавляться здесь -->
         </ul>
 
         <footer>
@@ -232,7 +232,7 @@
         const progressText = document.getElementById('progress-text');
         const progressBar = document.getElementById('progress-bar');
 
-        // Список треков (пути к твоим файлам)
+        // Список треков 
         const tracks = [
             {
                 title: "ULTRAMATUSHKA PIZDEC TROLLFACE",
@@ -313,25 +313,25 @@
             trackTitle.textContent = track.title;
             trackArtist.textContent = track.artist;
             
-            // Пробуем загрузить файл
+            
             audioPlayer.src = track.src;
             audioPlayer.load();
             
-            // Проверяем, загрузился ли файл
+            
             audioPlayer.onerror = function() {
-                showError(`Не могу найти файл: ${track.src}`);
-                trackTitle.textContent = "⚠️ Файл не найден";
+                showError(`BRADAR WHERE IS SONG: ${track.src}`);
+                trackTitle.textContent = "⚠️ NO SONG BRADAR";
             };
             
-            // Сбрасываем прогресс-бар
+            // СБРОС ПГ
             progressFill.style.width = '0%';
             progressText.textContent = '0:00 / 0:00';
             
-            // Обновляем активный трек в плейлисте
+            // треки обновлять йоу
             updatePlaylistActive();
         }
 
-        // Функция для обновления активного трека в плейлисте
+        // Функция для обновления трека в плейлисте
         function updatePlaylistActive() {
             document.querySelectorAll('.playlist li').forEach((li, index) => {
                 if (index === currentTrackIndex) {
@@ -431,11 +431,11 @@
         nextBtn.addEventListener('click', nextTrack);
         prevBtn.addEventListener('click', prevTrack);
 
-        // Загружаем первый трек при старте
+        
         renderPlaylist();
         loadTrack(0);
 
-        // Добавляем клавиши для удобства
+        
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
